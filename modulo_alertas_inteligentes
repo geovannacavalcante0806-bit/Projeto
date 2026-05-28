@@ -1,0 +1,34 @@
+import sqlite3
+
+def alertas_inteligentes():
+
+    print(" ALERTAS INTELIGENTES ")
+
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT nome_do_produto, quantidade, estoque_minimo
+    FROM produtos
+    """)
+
+    produtos = cursor.fetchall()
+
+    encontrou_alerta = False
+
+    for produto in produtos:
+        nome = produto[0]
+        quantidade = produto[1]
+        estoque_minimo = produto[2]
+
+        if quantidade <= estoque_minimo:
+            encontrou_alerta = True
+            print("Produto:", nome)
+            print("Quantidade atual:", quantidade)
+            print("Estoque mínimo:", estoque_minimo)
+            print("Aviso: precisa fazer reposição!")
+
+    if encontrou_alerta == False:
+        print("Nenhum produto com estoque baixo.")
+
+    conexao.close()

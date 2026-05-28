@@ -1,0 +1,35 @@
+import sqlite3
+
+from main import menu
+
+def relatorio_gerencial():
+    print("RELATÓRIO GERENCIAL")
+    
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+    
+    cursor.execute("SELECT nome_do_produto, quantidade, preco_unitario, estoque_minimo FROM produtos")
+    produtos = cursor.fetchall()
+    
+    if produtos == []:
+        print("Nenhum produto cadastrado.")
+    else:
+        total_itens = 0
+        valor_total_estoque = 0
+        produtos_baixo_estoque = 0
+        
+        for produto in produtos:
+            quantidade = produto[1]
+            preco_unitario = produto[2]
+            estoque_minimo = produto[3]
+            total_itens = total_itens + quantidade
+            valor_total_estoque = valor_total_estoque + (quantidade * preco_unitario)
+            if quantidade <= estoque_minimo:
+                produtos_baixo_estoque = produtos_baixo_estoque + 1
+        
+        print("Total de itens no estoque:", total_itens)
+        print("Valor total do estoque: R$", valor_total_estoque)
+        print("Produtos com estoque baixo:", produtos_baixo_estoque)
+    
+    conexao.close()
+    menu()

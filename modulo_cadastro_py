@@ -1,0 +1,28 @@
+import sqlite3
+
+def cadastrar_produto():
+    print("CADASTRO DE PRODUTO")
+    
+    nome = input("Nome do produto: ")
+    categoria = input("Categoria: ")
+    quantidade = int(input("Quantidade inicial: "))
+    unidade = input("Unidade: ")
+    preco_unitario = float(input("Preço unitário: "))
+    estoque_minimo = int(input("Estoque mínimo: "))
+    especificacoes = input("Especificações técnicas: ")
+    
+    preco_total = quantidade * preco_unitario
+    
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+    
+    cursor.execute("""
+    INSERT INTO produtos
+    (nome_do_produto, categoria, quantidade, unidade, preco_unitario, preco_total, estoque_minimo, especificacoes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (nome, categoria, quantidade, unidade, preco_unitario, preco_total, estoque_minimo, especificacoes))
+    
+    conexao.commit()
+    conexao.close()
+    
+    print("Produto cadastrado com sucesso!")

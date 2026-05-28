@@ -1,0 +1,131 @@
+import sqlite3
+
+def listar_produtos():
+    print(" ESTOQUE ATUAL DOS PRODUTOS")
+
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT codigo, nome_do_produto, categoria, quantidade, unidade, preco_unitario, preco_total, estoque_minimo
+    FROM produtos
+    """)
+
+    produtos = cursor.fetchall()
+
+    if len(produtos) == 0:
+        print("Nenhum produto cadastrado.")
+    else:
+        for produto in produtos:
+            print("Código:", produto[0])
+            print("Nome:", produto[1])
+            print("Categoria:", produto[2])
+            print("Quantidade:", produto[3], produto[4])
+            print("Preço unitário: R$", produto[5])
+            print("Preço total: R$", produto[6])
+
+            if produto[3] <= produto[7]:
+                print("ALERTA: estoque baixo! Precisa atualizar o estoque.")
+
+    conexao.close()
+
+def registrar_movimentacao():
+
+    print("MOVIMENTAÇÃO DE ESTOQUE")
+    codigo = int(input("Código do produto: "))
+    tipo = input("Tipo (entrada ou saida): ")
+    motivo = input("Motivo: ")
+    quantidade = int(input("Quantidade movimentada: "))
+    data = input("Data da movimentação: ")
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT quantidade
+    FROM produtos
+    WHERE codigo = ?
+    """, (codigo,))
+
+    produto = cursor.fetchone()
+
+    if produto == None:
+        print("Produto não encontrado.")
+        conexao.close()
+        return
+
+    quantidade_atual = produto[0]
+
+    if tipo == "entrada":
+        nova_quantidade = quantidade_atual + quantidade
+    elif tipo == "saida":
+
+        if quantidade > quantidade_atual:
+            print("Estoque insuficiente.")
+            conexao.close()
+            return
+
+        nova_quantidade = quantidade_atual - quantidade
+
+    else:
+        print("Tipo inválido.")
+        conexao.close()
+        return
+
+    cursor.execute("""
+    UPDATE produtos
+    SET quantidade = ?
+    WHERE codigo = ?
+    """, (nova_quantidade, codigo))
+
+    cursor.execute("""
+    INSERT INTO movimentacoes
+    (
+        produto_id,
+        tipo,
+        motivo,
+        quantidade,
+        data
+    )
+    VALUES (?, ?, ?, ?, ?)
+    """, (
+        codigo,
+        tipo,
+        motivo,
+        quantidade,
+        data
+    ))
+
+    conexao.commit()
+
+    conexao.close()
+
+    print("Movimentação registrada com sucesso!")
+def mostrar_movimentacoes():
+
+    print("HISTÓRICO DE MOVIMENTAÇÕES ")
+
+    conexao = sqlite3.connect("banco.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT
+    produto_id,
+    tipo,
+    motivo,
+    quantidade,
+    data
+    FROM movimentacoes
+    """)
+
+    movimentacoes = cursor.fetchall()
+
+    if movimentacoes == []:
+        print("Nenhuma movimentação cadastrada.")
+    else:
+        for movimentacao in movimentacoes:
+
+            print("Produto:", movimentacao[0])
+            print("Tipo:", movimentacao[1])
+            print("Motivo:", movimentacao[2])
+            print("Quantidade:", movimentacao[3])
+            print("Data:", movimentacao[4])

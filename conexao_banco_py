@@ -1,0 +1,46 @@
+import sqlite3
+import os
+
+#VERIFICA SE O BANCO EXISTE, SE NÃO EXISTIR ELE CRIA O BANCO E AS TABELAS
+if not os.path.exists("banco.db"):
+    print("Banco de dados não encontrado. Criando...")
+else:
+    print("Banco já existe.")
+
+
+#CONECTA AO BANCO DE DADOS E CRIA AS TABELAS SE ELAS NÃO EXISTIREM  
+conexao = sqlite3.connect("banco.db")
+cursor = conexao.cursor()
+
+#TABELA PRODUTOS
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS produtos (
+    codigo INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome_do_produto TEXT NOT NULL,
+    categoria TEXT NOT NULL,
+    quantidade INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    preco_unitario REAL NOT NULL,
+    preco_total REAL NOT NULL,
+    estoque_minimo INTEGER NOT NULL,
+    especificacoes TEXT
+)
+""")
+
+#TABELA MOVIMENTAÇÕES
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS movimentacoes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    produto_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    motivo TEXT NOT NULL,
+    quantidade INTEGER NOT NULL,
+    data TEXT NOT NULL,
+    FOREIGN KEY(produto_id) REFERENCES produtos(codigo)
+)
+""")
+
+conexao.commit()
+conexao.close()
+
+print("Banco criado com sucesso!")
